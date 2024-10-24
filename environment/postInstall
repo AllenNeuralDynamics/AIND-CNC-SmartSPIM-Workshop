@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -e
+
+# Print debug information
+echo "Running postInstall script"
+which bash
+which pip
+
+# install the AIND fork of the atlasapi and atlas-plots
+pip install git+https://github.com/AllenNeuralDynamics/brainglobe-atlasapi.git
+# pip install git+https://github.com/AllenNeuralDynamics/atlas-plots.git

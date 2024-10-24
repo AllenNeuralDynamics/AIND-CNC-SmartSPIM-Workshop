@@ -1,7 +1,9 @@
 {
 	"version": 1,
 	"base_image": "codeocean/jupyterlab:3.0.9-miniconda4.9.2-python3.8-ubuntu20.04",
+	"post_install": true,
 	"options": {
+		"registry_host_arg": true,
 		"git_ask_pass": true
 	}
 }

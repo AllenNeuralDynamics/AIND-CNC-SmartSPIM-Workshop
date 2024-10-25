@@ -1,9 +1,57 @@
 {
 	"version": 1,
-	"base_image": "codeocean/jupyterlab:3.0.9-miniconda4.9.2-python3.8-ubuntu20.04",
+	"base_image": "codeocean/py-r:python3.10.12-R4.2.3-IRkernel-ubuntu22.04",
 	"post_install": true,
 	"options": {
 		"registry_host_arg": true,
 		"git_ask_pass": true
+	},
+	"installers": {
+		"pip": {
+			"packages": [
+				{
+					"name": "allensdk",
+					"version": "2.16.2"
+				},
+				{
+					"name": "antspyx",
+					"version": "0.4.2"
+				},
+				{
+					"name": "ccf-streamlines",
+					"version": "1.1.4"
+				},
+				{
+					"name": "dask",
+					"version": "2023.5.0"
+				},
+				{
+					"name": "ipywidgets",
+					"version": "8.1.5"
+				},
+				{
+					"name": "opencv-python-headless",
+					"version": "4.8.0.74"
+				},
+				{
+					"name": "pandas",
+					"version": "1.5.3"
+				},
+				{
+					"name": "scikit-learn",
+					"version": "1.4.0"
+				},
+				{
+					"name": "seaborn",
+					"version": "0.12.2"
+				},
+				{
+					"name": "zarr",
+					"version": "2.14.2"
+				}
+			],
+			"options": {},
+			"pre_install_options": {}
+		}
 	}
 }

@@ -1,0 +1,17 @@
+{
+	"version": 1,
+	"attached_datasets": [
+		{
+			"id": "4561181b-a4e5-41c6-b30f-ca458a547bad",
+			"mount": "SmartSPIM_681227_2023-07-07_11-21-34_stitched_2023-07-24_20-38-50"
+		},
+		{
+			"id": "e0361ca9-aa14-4a29-8a54-d36b67a89747",
+			"mount": "SmartSPIM_675388_2023-05-24_04-10-19_stitched_2023-05-28_18-07-46"
+		},
+		{
+			"id": "fdd6dcbf-0917-4349-ae18-20f687b0089c",
+			"mount": ".brainglobe"
+		}
+	]
+}

@@ -1,3 +1,4 @@
-# aind-capsule-template
+# UW CNC Workshop
 
-Basic structure of a capsule to be customized as needed.
+Data and materials for the AIND - CNC Workshop held December 4, 2024.
+

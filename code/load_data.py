@@ -9,7 +9,7 @@ import pandas as pd
 
 
 
-class brain:
+class load_data:
     # Attributes
     baseResolution = [1.8, 1.8, 2] # microns
     zarrMultiple = {j:2**j for j in range(5)} # compression at each zarr level

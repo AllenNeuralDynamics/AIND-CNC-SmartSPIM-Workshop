@@ -1,4 +1,4 @@
-# hash:sha256:684ada29882ba04b2892f4f55b8016e0cec6abe7c878dd75a4ecc0c7f01b6c18
+# hash:sha256:3bccdbaf1a446214fab1a78558ece86015418bfae5d6616d0997253c0fab93e3
 ARG REGISTRY_HOST
 FROM $REGISTRY_HOST/codeocean/py-r:python3.10.12-R4.2.3-IRkernel-ubuntu22.04
 
@@ -14,6 +14,7 @@ RUN pip install -U --no-cache-dir \
     ccf-streamlines==1.1.4 \
     dask==2023.5.0 \
     ipywidgets==8.1.5 \
+    matplotlib==3.9.2 \
     opencv-python-headless==4.8.0.74 \
     pandas==1.5.3 \
     scikit-learn==1.4.0 \

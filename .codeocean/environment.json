@@ -30,6 +30,10 @@
 					"version": "8.1.5"
 				},
 				{
+					"name": "matplotlib",
+					"version": "3.9.2"
+				},
+				{
 					"name": "opencv-python-headless",
 					"version": "4.8.0.74"
 				},

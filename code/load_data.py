@@ -16,7 +16,7 @@ class load_data:
     injectionSites = {} # injection site information, populated by getInjectionSites call
     
     # Initiator
-    def __init__(self,sample, level = 4):
+    def __init__(self,sample, level = 3):
         self.sample = str(sample)
         self.getPath()
         self.setLevel(level)

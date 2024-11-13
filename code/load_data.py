@@ -215,3 +215,4 @@ class load_data:
         location_df = pd.concat(locCells_list, ignore_index=True)
         
         return location_df
+    

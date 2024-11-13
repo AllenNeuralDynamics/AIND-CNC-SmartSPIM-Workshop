@@ -2,6 +2,10 @@
 	"version": 1,
 	"attached_datasets": [
 		{
+			"id": "1aaf45a1-c928-4818-9ac6-bb66c6445412",
+			"mount": "SmartSPIM_685903_2023-08-23_13-03-18_stitched_2023-11-07_22-40-00"
+		},
+		{
 			"id": "4561181b-a4e5-41c6-b30f-ca458a547bad",
 			"mount": "SmartSPIM_681227_2023-07-07_11-21-34_stitched_2023-07-24_20-38-50"
 		},

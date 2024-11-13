@@ -12,11 +12,10 @@ import pandas as pd
 class load_data:
     # Attributes
     baseResolution = [1.8, 1.8, 2] # microns
-    zarrMultiple = {j:2**j for j in range(5)} # compression at each zarr level
-    injectionSites = {} # injection site information, populated by getInjectionSites call
+    zarrMultiple = {j : 2 ** j for j in range(5)} # compression at each zarr level
     
     # Initiator
-    def __init__(self,sample, level = 3):
+    def __init__(self, sample, level = 3):
         self.sample = str(sample)
         self.getPath()
         self.setLevel(level)
@@ -120,35 +119,35 @@ class load_data:
                 colormaps[ch] = sns.blend_palette([base,colorSets[ch]], as_cmap = True)
         self.colormaps = colormaps
         
-    def getInjectionSite(self, ch, level = 4, plane = 'sagittal', span = 60, showPlot = True):
-        # Method to localize viral injection sites. 
-        self.setLevel(level, showPlot)
-        # For a given channel, find the center of mass in a span around the brightest point in the volume.
-        chVol = self.orientVol(ch, plane = plane)  # Think about best orientation to save coordinates in
-        posMax = np.argmax(chVol).compute() # Find brightest pixel in entire volume, then convert to index
-        indxMax = np.unravel_index(posMax, chVol.shape)
-        # Further process on volume centered at brightest point, size governed by span
-        xSlice, ySlice, zSlice = slice(indxMax[0] - span,indxMax[0] + span), slice(indxMax[1] - span,indxMax[1] + span), slice(indxMax[2] - span,indxMax[2] + span)
-        centerVol = chVol[xSlice,ySlice,zSlice]
-        # Clip volume to signal for CoM calculation
-        clipVals = np.quantile(centerVol,[.95,.995])
-        centerVol = centerVol - clipVals[0] # Set everything below 95% to 0, clip to 95th percentile
-        centerVol = centerVol.clip(0,clipVals[1] - clipVals[0])
-        com = np.round(ndimage.center_of_mass(np.array(centerVol)))
-        # Plot if requested
-        if showPlot:
-            plt.imshow(centerVol[com[0],:,:],cmap = self.colormaps[ch],vmax=1200)
-            plt.plot(com[2],com[1],'or')
-            
-        coord = com - span + indxMax
-        self.injectionSites[ch] = {"plane":plane, "level":level, "span":span, "coordinates":coord}
-        # Edit later to include fitting function
-        return centerVol
+    def plotSlice(self, ch = [], plane = "coronal", section = [], extent = [], level = 3, ticks = True, printOutput = True):
+        """ 
+        Plots a single brain slice from the volumetric data in a specified plane.
+
+        Parameters
+        ----------
+        ch : str, optional
+            Imaging channel to plot (e.g., "488", "561"). If not specified, defaults to the shortest wavelength available.
+        plane : str, optional
+            Plane in which to view the slice: "coronal", "sagittal", or "transverse". Defaults to "coronal".
+        section : int or float, optional
+            Position along the selected plane, in microns, to slice. If not specified, defaults to the midpoint.
+        extent : list of float, optional
+            4-element list defining the [left, right, bottom, top] extent of the plot in microns.
+            If not provided, defaults to the entire image field.
+        level : int, optional
+            Downsampling level for the data. Higher levels correspond to more downsampling, for faster plotting. Default is 3.
+        ticks : bool, optional
+            Whether to display x and y axis labels and tick marks. Default is True.
+        printOutput : bool, optional
+            If True, prints information about the section and level being plotted. Default is True.
+
+        Returns
+        -------
+        None
+            Displays a matplotlib plot of the specified slice.
         
-        
-    def plotSlice(self,ch = [],plane = "coronal",section = [], extent = [], level = 3, vmin = 0, vmax = 600, alpha = 1, ticks = True, printOutput = True):
-        # Method to plot a particular slice
-        
+        """ 
+                
         # If no channel is provided, plot shortest wavelength
         if not ch:
             ch = min(self.channels)
@@ -169,88 +168,50 @@ class load_data:
         else: #interpret extent requests as microns, convert to indices
             extentIndices = np.round(np.array(extent) / self.zarrMultiple[level])
         if printOutput:
-            print(printTxt + 'secion: ' + str(section) + ' (level ' + str(level) + ' index: ' + str(sectionIndex) + ')')
+            print(printTxt + 'section: ' + str(section) + ' (level ' + str(level) + ' index: ' + str(sectionIndex) + ')')
             
         # Plot data
         plt.imshow(chVol[sectionIndex,extentIndices[3]:extentIndices[2],extentIndices[0]:extentIndices[1]], cmap = self.colormaps[ch], 
-                   vmin = vmin, vmax = vmax, extent = extent, alpha = alpha, interpolation='none')
+                   vmin = 0, vmax = 600, extent = extent, alpha = 1, interpolation='none')
         if ticks:
             plt.title(ch)
             plt.xlabel(xLabel)
             plt.ylabel(yLabel)
         else:
             plt.tick_params(left = False, labelleft = False, bottom = False, labelbottom = False)
+    
+    def getCellsCCFdf(self, ch: list):
+        """ 
+        Retrieves and formats CCF transformed coordinates of segmented cells into a dataframe. 
 
-    def plotPoint(self, cst, ch: list = [], span = 20, vmin = 0, vmax = 600):
-        # Method to plot a given point in 3 planes, specified by variable cst (coronal, sagittal, transverse).
-        
-        # If no channel is provided, plot shortest wavelength
-        if not ch:
-            ch = min(self.channels)
-        
-        if span > 300:
-            level = 1
-        else:
-            level = 0
-        
-        # Set up subplots
-        nChannels = len(ch)
-        planeDict = {0:"Coronal",1:"Sagittal",2:"Transverse"}
-        extentDict = {0: [cst[1]-span, cst[1]+span, cst[2]+span,cst[2]-span], # M/L, D/V
-                      1: [cst[0]-span, cst[0]+span, cst[2]+span,cst[2]-span], # A/P, D/V
-                      2: [cst[1]-span, cst[1]+span, cst[0]+span,cst[0]-span], # M/L, A/P
-                     }
-        for chIndx, channel in enumerate(ch):
-            for planeIndx in range(3):
-                plt.subplot(nChannels,3,1+planeIndx+chIndx*3)
-                self.plotSlice(ch=channel,plane = planeDict[planeIndx], section = cst[planeIndx], extent = extentDict[planeIndx],
-                           level=0, vmin = vmin, vmax = vmax, printOutput = False, ticks = False)
-                if chIndx == 0:
-                    plt.title(planeDict[planeIndx])
-        plt.tight_layout()
-        plt.subplots_adjust(wspace = 0.2, hspace = 0.2)
-            
+        Parameters
+        ----------
+        ch : list of str 
+            List of imaging channels to retrieve coordinates from (e.g., ["488", "561"]). 
 
-    def plotBlend(self,ch: list = [],plane = "coronal",section = [], extent = [], level = 3, alphaDict = [], vDict = [], ticks = True):
-        # Method to plot blended channels
-        
-        # If no channels are provided, plot all. Default to longest wavelength first
-        if not ch:
-            ch = self.channels
-            if ch[0] < ch[-1]:
-                ch = ch[::-1]
+        Returns
+        -------
+        location_df : pd.DataFrame
+            Dataframe where each row is a cell and each column is a coordinate: AP (anterior-posterior), DV (dorsal-ventral), or ML (medial-lateral), with an additional "channel" column indicating the channel of origin. 
             
-        # If no alpha dict values are provided, use default
-        if not alphaDict:
-            defaultAlpha = 1/len(ch)
-            alphaDict = {channel:defaultAlpha for channel in ch}
-        
-        # If no vmin / vmax dict values are provided, use default
-        if not vDict:
-            vDict = {channel:[0,600] for channel in ch}
-        
-        # Plot blended channels
-        for channel in ch:
-            self.plotSlice(ch=channel,plane = plane, section = section, extent =extent, level=level, alpha = alphaDict[channel],
-                           vmin = vDict[channel][0], vmax = vDict[channel][1], printOutput = False, ticks = ticks)
-        plt.title('')
-        
-    def getNGLink(self):
-        # Method to print neuroglancer link of associated imaging data
-        linkPath = self.rootDir.joinpath("neuroglancer_config.json")
-        # linkPath =self.rootDir.joinpath("image_cell_segmentation/Ex_561_Em_593/visualization/neuroglancer_config.json")
-        ngJSON = pd.read_json(linkPath, orient = 'index')
-        print(ngJSON[0]["ng_link"])
-        
-    def getCellsCCF(self, ch: list):
-        # Method to retrieve and format CCF transformed coordinates of segemented cells
+        """
+
         ccfDim = [528, 320, 456]
-        locationDict = {}
+        locCells_list = []
+
         for channel in ch:
-            locCellsDF = pd.read_xml(self.ccfCellsPaths[channel],xpath = "//CellCounter_Marker_File//Marker_Data//Marker_Type//Marker")
-            locCells = locCellsDF.to_numpy() # Cells are output in [ML, DV, AP]
-            locCells[:,:] = locCells[:,[2,1,0]] # Rearrange indices to be AP, DV, ML
-            for i, dim in enumerate(ccfDim): # Ensure cells fall within bounds of CCF annotation volume
-                locCells[:,i] = locCells[:,i].clip(0,dim-1)
-            locationDict[channel] = locCells
-        return locationDict
+            locCells = pd.read_xml(self.ccfCellsPaths[channel], xpath="//CellCounter_Marker_File//Marker_Data//Marker_Type//Marker")
+            locCells = locCells[['MarkerZ', 'MarkerY', 'MarkerX']]  # Rearrange indices to be AP, DV, ML
+            locCells = locCells.rename(columns={'MarkerZ': 'AP', 'MarkerY': 'DV', 'MarkerX': 'ML'})  # Rename columns
+            locCells = locCells.assign(channel=channel)  # Adds a column with the channel name
+
+            # Clip coordinates to be within specified dimensions
+            locCells['AP'] = locCells['AP'].clip(0, ccfDim[0]-1)
+            locCells['DV'] = locCells['DV'].clip(0, ccfDim[1]-1)
+            locCells['ML'] = locCells['ML'].clip(0, ccfDim[2]-1)
+
+            locCells_list.append(locCells) 
+
+        location_df = pd.concat(locCells_list, ignore_index=True)
+        
+        return location_df

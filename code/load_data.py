@@ -10,6 +10,71 @@ import pandas as pd
 
 
 class load_data:
+    """ 
+    A class to load, process, and analyze whole-brain volumetric imaging data for a specified mouse ID. 
+    
+    Parameters
+    -----------
+    sample : int or str 
+        Mouse ID (e.g., 689305) 
+    
+    level : int, optional 
+        Resolution level for loading volumetric imaging data. Range: 0 - 4, higher numbers equate to greater downsampling.      
+        Default = 3.  
+
+    Attributes 
+    ----------
+    baseResolution : list of float
+        Base voxel resolution in microns: [1.8, 1.8, 2]
+        
+    zarrMultiple : dict 
+        A dictionary mapping Zarr resolution levels to their corresponding compression factors 
+        
+    rootDir : pathlib.Path 
+        Root directory for the mouse ID data. 
+        
+    channels : list of str 
+        List of imaging channels (e.g., ["488", "561"]) in the dataset 
+        
+    chPaths : dict 
+        Dictionary mapping channel names to their corresponding volumetric data paths. 
+        
+    segPaths : dict 
+        Dictionary mapping channel names to paths for segmentated cell data. 
+        
+    quantPaths : dict 
+        Dictionary mapping channel names to paths for CCF-aligned cell count data. 
+        
+    ccfCellsPaths : dict 
+        Dictionary mapping channel names to paths for CCF-transformed cell coordinate data. 
+        
+    vols : dict 
+        Dictionary of loaded volumetric imaging data arrays for each channel 
+        
+    Methods 
+    --------
+    getPath(): 
+        Locates and validates file paths for imaging data, cell segmentations, and CCF quantifications. 
+        
+    setLevel(level, printOutput = True):
+        Updates the resolution level and loads the corresponding volumetric imaging data. 
+        
+    getVol():
+        Loads the volumetric imaging data for all available channels at the specified resolution level. 
+    
+    orientVol(ch, plane="coronal", returnLabels=False): 
+        Orients a channel's volumetric data to a specified plane (coronal, sagittal, or transverse). 
+        
+    setColorMaps(base="black", channelColors={}): 
+        Sets colormaps for visualization
+        
+    plotSlice(ch=[], plane="coronal", section=[], extent=[], level=3, ticks=True, printOutput=True):
+        Plots a single brain slice for the specified channel, plane and resolution level. 
+        
+    getCellsCCFdf(ch): 
+        Extracts the CCF-transformed coordinates for specified channels and reutrns as a DataFrame. 
+    """
+    
     # Attributes
     baseResolution = [1.8, 1.8, 2] # microns
     zarrMultiple = {j : 2 ** j for j in range(5)} # compression at each zarr level
@@ -62,7 +127,7 @@ class load_data:
         self.ccfCellsPaths = ccfCellsPaths
         print(f"Found CCF aligned quantifications in the following channels: {list(quantPaths.keys())}")
         
-    def setLevel(self,level,printOutput = True):
+    def setLevel(self,level, printOutput=True):
         # Method to update level and grab hierarchical volume for corresponding resolution level
         self.level = level
         if printOutput:
@@ -73,7 +138,7 @@ class load_data:
         # Method to mount volumetric imaging data
         self.vols = {channel: da.from_zarr(str(chPath), self.level).squeeze() for channel,chPath in self.chPaths.items()}
     
-    def orientVol(self, ch, plane = "coronal", returnLabels = False):
+    def orientVol(self, ch, plane="coronal", returnLabels=False):
         # Method to orient requested channel volume to a particular plane. Return labels for internal methods, e.g. plotSlice
         if (plane.lower() == "horizontal") | (plane.lower() == "transverse"):
             printTxt = "Plotting horizontal axis, "
@@ -98,7 +163,7 @@ class load_data:
         else:
             return chVol
     
-    def setColorMaps(self, base = "black",channelColors = {}):
+    def setColorMaps(self, base="black", channelColors={}):
         # Method to establish each channel's color map for future plotting. Modifies default colors via channelColors channel:color dictionary pairs
         colorSets = {"445":"turquoise","488":"lightgreen","561":"tomato","639":"white"} # default colors
         colormaps = {}
@@ -119,7 +184,7 @@ class load_data:
                 colormaps[ch] = sns.blend_palette([base,colorSets[ch]], as_cmap = True)
         self.colormaps = colormaps
         
-    def plotSlice(self, ch = [], plane = "coronal", section = [], extent = [], level = 3, ticks = True, printOutput = True):
+    def plotSlice(self, ch=[], plane="coronal", section=[], extent=[], level=3, ticks=True, printOutput=True):
         """ 
         Plots a single brain slice from the volumetric data in a specified plane.
 
@@ -127,17 +192,23 @@ class load_data:
         ----------
         ch : str, optional
             Imaging channel to plot (e.g., "488", "561"). If not specified, defaults to the shortest wavelength available.
+            
         plane : str, optional
             Plane in which to view the slice: "coronal", "sagittal", or "transverse". Defaults to "coronal".
+            
         section : int or float, optional
             Position along the selected plane, in microns, to slice. If not specified, defaults to the midpoint.
+            
         extent : list of float, optional
             4-element list defining the [left, right, bottom, top] extent of the plot in microns.
             If not provided, defaults to the entire image field.
+            
         level : int, optional
             Downsampling level for the data. Higher levels correspond to more downsampling, for faster plotting. Default is 3.
+            
         ticks : bool, optional
             Whether to display x and y axis labels and tick marks. Default is True.
+            
         printOutput : bool, optional
             If True, prints information about the section and level being plotted. Default is True.
 
@@ -192,7 +263,7 @@ class load_data:
         Returns
         -------
         location_df : pd.DataFrame
-            Dataframe where each row is a cell and each column is a coordinate: AP (anterior-posterior), DV (dorsal-ventral), or ML (medial-lateral), with an additional "channel" column indicating the channel of origin. 
+            Dataframe where each row is a cell and each column is a coordinate: AP (anterior-posterior), DV (dorsal-ventral), or             ML (medial-lateral), with an additional "channel" column indicating the channel of origin. 
             
         """
 
@@ -201,8 +272,10 @@ class load_data:
 
         for channel in ch:
             locCells = pd.read_xml(self.ccfCellsPaths[channel], xpath="//CellCounter_Marker_File//Marker_Data//Marker_Type//Marker")
-            locCells = locCells[['MarkerZ', 'MarkerY', 'MarkerX']]  # Rearrange indices to be AP, DV, ML
-            locCells = locCells.rename(columns={'MarkerZ': 'AP', 'MarkerY': 'DV', 'MarkerX': 'ML'})  # Rename columns
+# #             since data was reprocessed, coordinates exported in AP, DV, ML order 
+#             locCells = locCells[['MarkerZ', 'MarkerY', 'MarkerX']]  # Rearrange indices to be AP, DV, ML
+#             locCells = locCells.rename(columns={'MarkerZ': 'AP', 'MarkerY': 'DV', 'MarkerX': 'ML'})  # Rename columns
+            locCells = locCells.rename(columns={'MarkerX': 'AP', 'MarkerY': 'DV', 'MarkerZ': 'ML'})  # Rename columns
             locCells = locCells.assign(channel=channel)  # Adds a column with the channel name
 
             # Clip coordinates to be within specified dimensions

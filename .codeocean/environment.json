@@ -10,6 +10,10 @@
 		"pip": {
 			"packages": [
 				{
+					"name": "aind-data-access-api[docdb]",
+					"version": "0.16.1"
+				},
+				{
 					"name": "allensdk",
 					"version": "2.16.2"
 				},

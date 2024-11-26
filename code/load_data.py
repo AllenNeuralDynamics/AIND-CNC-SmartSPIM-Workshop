@@ -275,6 +275,7 @@ class load_data:
 # #             since data was reprocessed, coordinates exported in AP, DV, ML order 
 #             locCells = locCells[['MarkerZ', 'MarkerY', 'MarkerX']]  # Rearrange indices to be AP, DV, ML
 #             locCells = locCells.rename(columns={'MarkerZ': 'AP', 'MarkerY': 'DV', 'MarkerX': 'ML'})  # Rename columns
+            locCells = locCells[['MarkerX', 'MarkerY', 'MarkerZ']]  # some insurance that data exports in X, Y, Z order 
             locCells = locCells.rename(columns={'MarkerX': 'AP', 'MarkerY': 'DV', 'MarkerZ': 'ML'})  # Rename columns
             locCells = locCells.assign(channel=channel)  # Adds a column with the channel name
 

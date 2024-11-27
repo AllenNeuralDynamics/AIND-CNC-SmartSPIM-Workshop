@@ -72,7 +72,10 @@ class load_data:
         Plots a single brain slice for the specified channel, plane and resolution level. 
         
     getCellsCCFdf(ch): 
-        Extracts the CCF-transformed coordinates for specified channels and reutrns as a DataFrame. 
+        Extracts the CCF-transformed coordinates for specified channels and returns as a DataFrame. 
+        
+    getcellcounts(ch): 
+        Extracts the cell counts by brain region for specified channels and returns as a DataFrame. 
     """
     
     # Attributes
@@ -263,7 +266,7 @@ class load_data:
         Returns
         -------
         location_df : pd.DataFrame
-            Dataframe where each row is a cell and each column is a coordinate: AP (anterior-posterior), DV (dorsal-ventral), or             ML (medial-lateral), with an additional "channel" column indicating the channel of origin. 
+            Dataframe where each row is a cell and each column is a coordinate: AP (anterior-posterior), DV (dorsal-ventral), or ML (medial-lateral), with an additional "channel" column indicating the channel of origin. 
             
         """
 
@@ -290,3 +293,32 @@ class load_data:
         
         return location_df
     
+    def getcellcounts(self, ch: list):
+        """ 
+        Imports the cell_counts_by_region.csv (quantification of detected cells in brain regions) as a dataframe 
+
+            Parameters
+            ----------
+            ch : list of str 
+                List of imaging channels to retrieve coordinates from (e.g., ["488", "561"]). 
+
+            Returns
+            -------
+            cell_counts_df : pd.DataFrame
+                DataFrame where each row is a brain region cell count in a given channel 
+
+            """
+
+        cell_counts_list = [] 
+
+        for channel in ch:
+            load_csv = pd.read_csv(self.quantPaths[channel]) # load csv 
+            cell_counts = load_csv[["ID","Acronym", "Struct_Info", "Struct_area_um3", "Left", "Right", "Total"]] #truncate df to specific columns
+            cell_counts = cell_counts.assign(channel=channel)
+
+            cell_counts_list.append(cell_counts)  
+
+        cell_counts_df = pd.concat(cell_counts_list, ignore_index=True)
+
+
+        return cell_counts_df

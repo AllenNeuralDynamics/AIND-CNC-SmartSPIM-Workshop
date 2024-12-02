@@ -313,7 +313,7 @@ class load_data:
 
         for channel in ch:
             load_csv = pd.read_csv(self.quantPaths[channel]) # load csv 
-            cell_counts = load_csv[["ID","Acronym", "Struct_Info", "Struct_area_um3", "Left", "Right", "Total"]] #truncate df to specific columns
+            cell_counts = load_csv[["ID","Acronym", "Name", "Struct_Info", "Struct_area_um3", "Left", "Right", "Total", "Left_Density", "Right_Density", "Total_Density"]] #truncate df to specific columns
             cell_counts = cell_counts.assign(channel=channel)
 
             cell_counts_list.append(cell_counts)  

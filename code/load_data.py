@@ -133,8 +133,7 @@ class load_data:
     def setLevel(self,level, printOutput=True):
         # Method to update level and grab hierarchical volume for corresponding resolution level
         self.level = level
-        if printOutput:
-            print(f"Grabbing volumes for level: {level}")
+
         self.getVol()
     
     def getVol(self):
@@ -309,16 +308,37 @@ class load_data:
 
             """
 
-        cell_counts_list = [] 
+            # Define required columns
+        required_columns = [
+            "ID", "Acronym", "Name", "Struct_Info", "Struct_area_um3",
+            "Left", "Right", "Total", "Left_Density", "Right_Density", "Total_Density"
+        ]
+
+        # Initialize an empty list to hold DataFrames
+        cell_counts_list = []
 
         for channel in ch:
-            load_csv = pd.read_csv(self.quantPaths[channel]) # load csv 
-            cell_counts = load_csv[["ID","Acronym", "Name", "Struct_Info", "Struct_area_um3", "Left", "Right", "Total", "Left_Density", "Right_Density", "Total_Density"]] #truncate df to specific columns
-            cell_counts = cell_counts.assign(channel=channel)
+            try:
+                # Load the CSV
+                load_csv = pd.read_csv(self.quantPaths[channel])
 
-            cell_counts_list.append(cell_counts)  
+                # Check if all required columns are present
+                if set(required_columns).issubset(load_csv.columns):
+                    # Truncate the DataFrame to the specific columns
+                    cell_counts = load_csv[required_columns]
+                    # Add a new column indicating the channel
+                    cell_counts = cell_counts.assign(channel=channel)
+                    # Append to the list
+                    cell_counts_list.append(cell_counts)
+            except (FileNotFoundError, KeyError) as e:
+                # Log or handle the error if necessary
+                print(f"Skipping channel {channel} due to error: {e}")
 
-        cell_counts_df = pd.concat(cell_counts_list, ignore_index=True)
-
+        # Concatenate the list into a single DataFrame
+        if cell_counts_list:
+            cell_counts_df = pd.concat(cell_counts_list, ignore_index=True)
+        else:
+            # Return an empty DataFrame with the required structure if no data is found
+            cell_counts_df = pd.DataFrame(columns=required_columns + ["channel"])
 
         return cell_counts_df

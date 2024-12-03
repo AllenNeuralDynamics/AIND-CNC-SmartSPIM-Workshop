@@ -1,6 +1,6 @@
 {
 	"version": 1,
-	"base_image": "codeocean/py-r:python3.10.12-R4.2.3-IRkernel-ubuntu22.04",
+	"base_image": "codeocean/jupyterlab:3.6.1-miniconda4.12.0-python3.9-ubuntu20.04",
 	"post_install": true,
 	"options": {
 		"registry_host_arg": true,
@@ -14,10 +14,6 @@
 					"version": "0.16.1"
 				},
 				{
-					"name": "antspyx",
-					"version": "0.4.2"
-				},
-				{
 					"name": "dask",
 					"version": "2023.5.0"
 				},
@@ -28,10 +24,6 @@
 				{
 					"name": "matplotlib",
 					"version": "3.9.2"
-				},
-				{
-					"name": "opencv-python-headless",
-					"version": "4.8.0.74"
 				},
 				{
 					"name": "pandas",

@@ -1,6 +1,6 @@
-# hash:sha256:0611bd85eb546e478813b56eda20437f011cfe1a294b79745c8da8fb31044576
+# hash:sha256:b58ca2caf619d9bac8e834fe171fbcb8a9786545efed6fe2b4f6b2c3f6450aae
 ARG REGISTRY_HOST
-FROM $REGISTRY_HOST/codeocean/py-r:python3.10.12-R4.2.3-IRkernel-ubuntu22.04
+FROM $REGISTRY_HOST/codeocean/jupyterlab:3.6.1-miniconda4.12.0-python3.9-ubuntu20.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -10,11 +10,9 @@ COPY git-askpass /
 
 RUN pip install -U --no-cache-dir \
     aind-data-access-api[docdb]==0.16.1 \
-    antspyx==0.4.2 \
     dask==2023.5.0 \
     ipywidgets==8.1.5 \
     matplotlib==3.9.2 \
-    opencv-python-headless==4.8.0.74 \
     pandas==1.5.3 \
     scikit-learn==1.4.0 \
     seaborn==0.12.2 \

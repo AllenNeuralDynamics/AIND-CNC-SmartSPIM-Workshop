@@ -1,4 +1,4 @@
-# hash:sha256:6f7a359040e57d8a98b19f384a9ed8cbc60a12f3ac4cb817ba2abb6461001ed1
+# hash:sha256:0611bd85eb546e478813b56eda20437f011cfe1a294b79745c8da8fb31044576
 ARG REGISTRY_HOST
 FROM $REGISTRY_HOST/codeocean/py-r:python3.10.12-R4.2.3-IRkernel-ubuntu22.04
 
@@ -10,9 +10,7 @@ COPY git-askpass /
 
 RUN pip install -U --no-cache-dir \
     aind-data-access-api[docdb]==0.16.1 \
-    allensdk==2.16.2 \
     antspyx==0.4.2 \
-    ccf-streamlines==1.1.4 \
     dask==2023.5.0 \
     ipywidgets==8.1.5 \
     matplotlib==3.9.2 \

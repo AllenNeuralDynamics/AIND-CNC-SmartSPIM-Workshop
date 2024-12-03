@@ -14,16 +14,8 @@
 					"version": "0.16.1"
 				},
 				{
-					"name": "allensdk",
-					"version": "2.16.2"
-				},
-				{
 					"name": "antspyx",
 					"version": "0.4.2"
-				},
-				{
-					"name": "ccf-streamlines",
-					"version": "1.1.4"
 				},
 				{
 					"name": "dask",
